@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config({ override: true });
+
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -22,7 +25,7 @@ if (!fs.existsSync(uploadsDir)) {
 
 const JWT_SECRET = process.env.JWT_SECRET || 'jaydev_fragrances_secret_key_2026';
 const ADMIN_PIN = process.env.ADMIN_PIN || '9823';
-const PORT = 3000;
+const PORT = parseInt(process.env.PORT || '3007', 10);
 
 const S3_API_KEY = process.env.S3_API_KEY || 'tc_live_9f8a7b6c5d4e3f2a1b0c9d8e7f';
 const S3_WORKSPACE_ID = process.env.S3_WORKSPACE_ID || process.env.WORKSPACE_ID || '21';
@@ -3213,18 +3216,23 @@ ${req.body.hint ? `Additional Admin Instructions/Context: ${req.body.hint}` : ''
   // -------------------------------------------------------------
   // VITE DEVELOPMENT MIDDLEWARE OR STATIC SERVER PIPELINE
   // -------------------------------------------------------------
-  if (process.env.NODE_ENV !== 'production') {
+  const distPath = path.join(process.cwd(), 'dist');
+  const isProduction = (process.env.NODE_ENV || 'production').toLowerCase() === 'production';
+
+  if (isProduction && fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+        return next();
+      }
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  } else {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa'
     });
     app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
   }
 
   // -------------------------------------------------------------
@@ -3233,9 +3241,26 @@ ${req.body.hint ? `Additional Admin Instructions/Context: ${req.body.hint}` : ''
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n==================================================`);
     console.log(`  JAYDEV FRAGRANCES eCommerce is live on port ${PORT}`);
-    console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`  Environment: ${process.env.NODE_ENV || 'production'}`);
     console.log(`==================================================\n`);
   });
+
+  // Also bind to port 3000 if PORT is set to a different port (such as 3007)
+  // to ensure local preview / dev proxy compatibility seamlessly
+  if (PORT !== 3000) {
+    try {
+      const bridgeServer = app.listen(3000, '0.0.0.0', () => {
+        console.log(`  Preview bridge listening on port 3000`);
+      });
+      bridgeServer.on('error', (err: any) => {
+        if (err.code !== 'EADDRINUSE') {
+          console.warn('Bridge server warning:', err.message);
+        }
+      });
+    } catch (e) {
+      // Ignored if port 3000 not needed
+    }
+  }
 }
 
 startServer();
