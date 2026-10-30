@@ -1,6 +1,4 @@
 import dotenv from 'dotenv';
-dotenv.config({ override: true });
-
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -14,8 +12,11 @@ import { createServer as createViteServer } from 'vite';
 import multer from 'multer';
 import { GoogleGenAI, Type } from '@google/genai';
 
-import { getPool, executeQuery, logActivity, query } from './src/db/connection.js';
+import { getPool, executeQuery, logActivity, query, testDbConnection, getDbStatus, loadEnvConfig } from './src/db/connection.js';
 import { runSeeder, wipeAllDataExceptAdmin } from './src/db/seed.js';
+
+// Pre-load environment configuration across candidate paths
+loadEnvConfig();
 
 
 const uploadsDir = path.join(process.cwd(), 'uploads');
@@ -154,21 +155,35 @@ async function startServer() {
   app.post('/api/s3/upload', uploadMulter.single('file'), handleS3Upload);
 
   // -------------------------------------------------------------
+  // DATABASE HEALTH & STATUS DIAGNOSTIC ENDPOINTS
+  // -------------------------------------------------------------
+  app.get('/api/db-status', async (req: any, res: any) => {
+    const refresh = req.query.refresh === 'true';
+    const status = await testDbConnection(refresh);
+    res.json(status);
+  });
+
+  app.get('/api/db-health', async (req: any, res: any) => {
+    const refresh = req.query.refresh === 'true';
+    const status = await testDbConnection(refresh);
+    res.status(status.connected ? 200 : 503).json(status);
+  });
+
+  app.post('/api/db-reconnect', async (req: any, res: any) => {
+    const status = await testDbConnection(true);
+    res.json(status);
+  });
+
+  // -------------------------------------------------------------
   // DATABASE INITIALIZATION & AUTO-STARTUP SEEDER
   // -------------------------------------------------------------
   try {
-    console.log('Initializing local database and service dependencies...');
-    
-    // Check if database 'jaydev_fragrances' exists. If not, try to create it.
-    try {
-      const tempPool = getPool();
-      if (!process.env.DB_DATABASE) {
-        await tempPool.query('CREATE DATABASE IF NOT EXISTS jaydev_fragrances');
-        console.log("Verified database 'jaydev_fragrances' exists.");
-      } else {
-        console.log(`Using pre-configured system database: ${process.env.DB_DATABASE}`);
-      }
-      
+    console.log('Initializing database connectivity and verifying service configuration...');
+    const initialDbCheck = await testDbConnection();
+
+    if (initialDbCheck.connected) {
+      console.log(`✓ MySQL database connected successfully to ${initialDbCheck.config.host}:${initialDbCheck.config.port}/${initialDbCheck.config.database}`);
+
       // Helper function to safely add missing columns without throwing ER_DUP_FIELDNAME duplicate error
       const addColumnIfNotExists = async (tableName: string, columnName: string, columnDef: string) => {
         try {
@@ -185,27 +200,34 @@ async function startServer() {
         }
       };
 
-      // Ensure orders table has tracking_number column if it already exists
-      await addColumnIfNotExists('orders', 'tracking_number', 'VARCHAR(255) NULL');
+      try {
+        // Ensure orders table has tracking_number column if it already exists
+        await addColumnIfNotExists('orders', 'tracking_number', 'VARCHAR(255) NULL');
 
-      // Ensure products table has Agarbatti-specific attributes (burn_time, scent_type, packaging_type, pooja_deity)
-      await addColumnIfNotExists('products', 'burn_time', 'VARCHAR(50) NULL');
-      await addColumnIfNotExists('products', 'scent_type', 'VARCHAR(100) NULL');
-      await addColumnIfNotExists('products', 'packaging_type', 'VARCHAR(100) NULL');
-      await addColumnIfNotExists('products', 'pooja_deity', 'VARCHAR(100) NULL');
-    } catch (dbCreateErr) {
-      console.warn('Non-blocking warning: Could not verify/create database (likely due to restricted database permissions on hosted environment). Continuing initialization...', dbCreateErr);
+        // Ensure products table has Agarbatti-specific attributes (burn_time, scent_type, packaging_type, pooja_deity)
+        await addColumnIfNotExists('products', 'burn_time', 'VARCHAR(50) NULL');
+        await addColumnIfNotExists('products', 'scent_type', 'VARCHAR(100) NULL');
+        await addColumnIfNotExists('products', 'packaging_type', 'VARCHAR(100) NULL');
+        await addColumnIfNotExists('products', 'pooja_deity', 'VARCHAR(100) NULL');
+      } catch (colErr) {
+        // Non-blocking
+      }
+
+      // Verify database schema initialization (no dummy data seeding)
+      try {
+        await runSeeder();
+        console.log('Database schema verified successfully. Operating in production mode with zero default seed data.');
+      } catch (dbErr) {
+        console.error('Non-blocking note on database schema verify:', dbErr);
+      }
+    } else {
+      console.warn(`⚠️ MySQL Database Connection Failed on startup: ${initialDbCheck.error?.message || 'Database offline'}`);
+      console.warn(`Attempted Target: ${initialDbCheck.config.host}:${initialDbCheck.config.port}, User: ${initialDbCheck.config.user}, Database: ${initialDbCheck.config.database}`);
+      console.warn(`Loaded .env Path: ${initialDbCheck.config.envFilePath || 'None found'}`);
+      console.warn('The application server is running; full diagnostic information is displayed on the homescreen for the administrator.');
     }
-    
-    // Verify database schema initialization (no dummy data seeding)
-    try {
-      await runSeeder();
-      console.log('Database schema verified successfully. Operating in production mode with zero default seed data.');
-    } catch (dbErr) {
-      console.error('CRITICAL ERROR: Failed to bootstrap database schema:', dbErr);
-    }
-  } catch (err) {
-    console.error('CRITICAL ERROR: Failed to connect to local MySQL/MariaDB database or boot schema. Please verify server is online.', err);
+  } catch (err: any) {
+    console.error('Non-blocking startup check error:', err?.message || err);
   }
 
   // -------------------------------------------------------------
@@ -684,7 +706,7 @@ ${req.body.hint ? `Additional Admin Instructions/Context: ${req.body.hint}` : ''
       }, {});
       res.json(settingsMap);
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      res.json({});
     }
   });
 
@@ -705,7 +727,7 @@ ${req.body.hint ? `Additional Admin Instructions/Context: ${req.body.hint}` : ''
       
       res.json(structured);
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      res.json([]);
     }
   });
 
@@ -1756,7 +1778,8 @@ ${req.body.hint ? `Additional Admin Instructions/Context: ${req.body.hint}` : ''
       }
       res.json({ success: true });
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      // Non-blocking background analytics when database is offline
+      res.json({ success: false, offline: true });
     }
   });
 

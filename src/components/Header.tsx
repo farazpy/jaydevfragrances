@@ -113,7 +113,7 @@ export default function Header({ user, cart, wishlistLength, onNavigate, onLogou
                       JAYDEV FRAGRANCES
                     </span>
                     <span className="text-[9px] font-mono font-bold bg-maroon-50 text-maroon-800 border border-maroon-200 px-1.5 py-0.5 rounded-md">
-                      v1.6.2
+                      v1.6.4
                     </span>
                   </div>
                   <span className="text-[8px] font-sans font-bold tracking-[0.3em] text-maroon-800 uppercase leading-none mt-0.5">

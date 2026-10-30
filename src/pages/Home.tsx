@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, ArrowRight, ShieldCheck, Truck, RotateCcw, Heart, ShoppingBag, Star, Mail, Flame, Flower2, Wind, Sun, Feather, Medal, CheckCircle2 } from 'lucide-react';
 import HeroSlider from '../components/HeroSlider.js';
 import ProductCard from '../components/ProductCard.js';
+import DbConnectionAlert, { DbStatusData } from '../components/DbConnectionAlert.js';
 import { Product, Category } from '../types.js';
 
 interface HomeProps {
@@ -17,19 +18,76 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoryProducts, setCategoryProducts] = useState<Record<number, Product[]>>({});
+  const [dbStatus, setDbStatus] = useState<DbStatusData | null>(null);
   
   // Newsletter subscription
   const [newsEmail, setNewsEmail] = useState('');
   const [newsStatus, setNewsStatus] = useState('');
 
+  const fetchDbStatus = async (forceRefresh = false) => {
+    try {
+      const url = forceRefresh ? '/api/db-status?refresh=true' : '/api/db-status';
+      const res = await fetch(url);
+      const data = await res.json();
+      setDbStatus(data);
+      return data;
+    } catch (err) {
+      console.error('Failed to fetch DB status:', err);
+      return null;
+    }
+  };
+
+  const loadStoreData = async () => {
+    // Fetch categories
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        setCategories(Array.isArray(data) ? data : []);
+      })
+      .catch(err => {
+        console.error(err);
+        setCategories([]);
+      });
+
+    // Fetch featured products with fallback
+    fetch('/api/products?type=featured&limit=8')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.products && data.products.length > 0) {
+          setFeaturedProducts(data.products);
+        } else {
+          fetch('/api/products?limit=8')
+            .then(r => r.json())
+            .then(fallbackData => {
+              if (fallbackData && fallbackData.products) {
+                setFeaturedProducts(fallbackData.products);
+              }
+            })
+            .catch(() => {});
+        }
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  };
+
+  const handleRefreshAll = async () => {
+    const status = await fetchDbStatus(true);
+    if (status && status.connected) {
+      await loadStoreData();
+    }
+  };
+
   useEffect(() => {
     let fetched = 0;
     const checkDone = () => {
       fetched++;
-      if (fetched >= 2) {
+      if (fetched >= 3) {
         setTimeout(() => setLoading(false), 500);
       }
     };
+
+    fetchDbStatus().then(checkDone).catch(checkDone);
 
     // Fetch categories
     fetch('/api/categories')
@@ -149,6 +207,11 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
   return (
     <div className="bg-white min-h-screen text-neutral-900 font-sans">
       
+      {/* Database Connection Alert (Prominently displayed if MySQL is disconnected) */}
+      {dbStatus && !dbStatus.connected && (
+        <DbConnectionAlert status={dbStatus} onRefresh={handleRefreshAll} />
+      )}
+
       {/* 1. Hero Banner Slider Stage */}
       <HeroSlider onNavigate={onNavigate} />
 
@@ -258,29 +321,37 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {categories.slice(0, 5).map((cat) => (
-            <div 
-              key={cat.id}
-              onClick={() => onNavigate('shop', `category=${cat.id}`)}
-              className="clean-card group relative rounded-xl overflow-hidden aspect-square border border-neutral-200 bg-neutral-900 cursor-pointer shadow-xs hover:shadow-md transition-all duration-300"
-            >
-              <img 
-                src={cat.image || "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&q=80&w=600"} 
-                alt={cat.name} 
-                className="w-full h-full object-cover group-hover:scale-105 opacity-85 group-hover:opacity-75 transition-all duration-500"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/85 via-neutral-950/20 to-transparent z-10" />
-              <div className="absolute bottom-4 left-4 right-4 z-20 flex flex-col items-start">
-                <span className="text-[8px] font-sans tracking-[0.25em] text-amber-300 uppercase font-bold mb-1">
-                  Explore Range
-                </span>
-                <h3 className="font-serif text-xs sm:text-sm font-bold text-white tracking-wider uppercase">
-                  {cat.name}
-                </h3>
+          {categories.length > 0 ? (
+            categories.slice(0, 5).map((cat) => (
+              <div 
+                key={cat.id}
+                onClick={() => onNavigate('shop', `category=${cat.id}`)}
+                className="clean-card group relative rounded-xl overflow-hidden aspect-square border border-neutral-200 bg-neutral-900 cursor-pointer shadow-xs hover:shadow-md transition-all duration-300"
+              >
+                <img 
+                  src={cat.image || "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&q=80&w=600"} 
+                  alt={cat.name} 
+                  className="w-full h-full object-cover group-hover:scale-105 opacity-85 group-hover:opacity-75 transition-all duration-500"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/85 via-neutral-950/20 to-transparent z-10" />
+                <div className="absolute bottom-4 left-4 right-4 z-20 flex flex-col items-start">
+                  <span className="text-[8px] font-sans tracking-[0.25em] text-amber-300 uppercase font-bold mb-1">
+                    Explore Range
+                  </span>
+                  <h3 className="font-serif text-xs sm:text-sm font-bold text-white tracking-wider uppercase">
+                    {cat.name}
+                  </h3>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="col-span-full py-8 text-center text-xs text-neutral-500 bg-neutral-50 rounded-xl border border-neutral-200">
+              {dbStatus && !dbStatus.connected
+                ? "MySQL database is offline. Please review the troubleshooting guide above to restore connection."
+                : "No categories currently found in database."}
             </div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -381,15 +452,23 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {featuredProducts.slice(0, 8).map(product => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-              onNavigate={onNavigate}
-              onToggleWishlist={onToggleWishlist}
-              isWishlisted={wishlist.includes(product.id)}
-            />
-          ))}
+          {featuredProducts.length > 0 ? (
+            featuredProducts.slice(0, 8).map(product => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onNavigate={onNavigate}
+                onToggleWishlist={onToggleWishlist}
+                isWishlisted={wishlist.includes(product.id)}
+              />
+            ))
+          ) : (
+            <div className="col-span-full py-10 text-center text-xs text-neutral-500 bg-neutral-50 rounded-xl border border-neutral-200">
+              {dbStatus && !dbStatus.connected
+                ? "Database connection is offline. Connect MySQL using the instructions at the top of the page to load products."
+                : "No featured products available at this time."}
+            </div>
+          )}
         </div>
       </section>
 
