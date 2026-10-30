@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS metrics (
+  date DATE PRIMARY KEY,
+  views INT DEFAULT 0,
+  sessions INT DEFAULT 0
+);

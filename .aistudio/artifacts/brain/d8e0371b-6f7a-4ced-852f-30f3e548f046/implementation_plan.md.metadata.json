@@ -1,0 +1,6 @@
+{
+  "summary":  "Implementation plan for WordPress & WooCommerce-grade core features in the Jaydev Fragrances admin dashboard with real MySQL persistence: Coupons & Discounts engine, Customer Accounts & Reviews moderation, Agarbatti and Incense Sticks specific attributes (scent notes, burn time, packaging, and pooja deity mapping), and storefront sync.",
+  "updatedAt":  "2026-10-30T08:39:50.031952442Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

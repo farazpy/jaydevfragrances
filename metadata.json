@@ -1,0 +1,6 @@
+{
+  "name": "Jaydev Fragrances",
+  "description": "Premium luxury spiritual eCommerce boutique for Jaydev Fragrances, featuring handcrafted organic Agarbatti, pure Bhimseni Kapoor, and charcoal-free Sambrani Dhoop cups, powered by Node.js, Express and secure MySQL persistence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
