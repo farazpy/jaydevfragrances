@@ -260,7 +260,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
               <Truck className="w-5 h-5 text-sky-600" />
             </div>
             <h4 className="text-xs font-serif font-bold uppercase tracking-wider text-neutral-900">
-              <span className="bg-sky-50 text-sky-800 border border-sky-200 text-[10px] px-2 py-0.5 rounded font-bold">Free Shipping & COD</span>
+              <span className="bg-sky-50 text-sky-800 border border-sky-200 text-[10px] px-2 py-0.5 rounded font-bold">Free Express Shipping</span>
             </h4>
             <p className="text-[11px] text-neutral-500 leading-snug">Fast delivery across India on orders over ₹999.</p>
           </div>

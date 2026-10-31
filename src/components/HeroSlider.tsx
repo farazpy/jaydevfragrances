@@ -79,22 +79,22 @@ export default function HeroSlider({ onNavigate }: HeroSliderProps) {
     <div className="relative w-full bg-[#fcfaf8] overflow-hidden group flex flex-col md:flex-row md:h-[600px] lg:h-[70vh] rounded-[6px] border border-neutral-100 shadow-sm">
       
       {/* Slide Typography Content - Left */}
-      <div className="flex-1 z-20 flex flex-col items-start justify-center p-6 sm:p-10 md:p-16 lg:p-24 animate-fade-in relative order-2 md:order-1">
-        <div className="w-full max-w-2xl flex flex-col items-start gap-4 md:gap-6">
+      <div className="flex-1 z-20 flex flex-col items-start justify-center p-5 pb-20 sm:p-10 sm:pb-20 md:p-16 md:pb-16 lg:p-24 animate-fade-in relative order-2 md:order-1">
+        <div className="w-full max-w-2xl flex flex-col items-start gap-3 sm:gap-4 md:gap-6">
           
-          <div className="inline-flex items-center gap-2 px-4 py-1 border-b border-neutral-300 text-[10px] font-mono font-medium uppercase text-neutral-600 tracking-[0.3em]">
-            <Sparkles className="w-3 h-3" /> Artisan Heritage
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1 border-b border-neutral-300 text-[9px] sm:text-[10px] font-mono font-medium uppercase text-neutral-600 tracking-[0.25em] sm:tracking-[0.3em]">
+            <Sparkles className="w-3 h-3 text-maroon-800" /> Artisan Heritage
           </div>
 
-          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-normal text-neutral-950 tracking-tight leading-[1.1] text-left">
+          <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-normal text-neutral-950 tracking-tight leading-[1.15] text-left">
             {activeBanner.title}
           </h1>
 
-          <p className="font-sans text-xs sm:text-base md:text-lg text-neutral-600 font-light leading-relaxed max-w-xl mt-1 md:mt-2 tracking-wide text-left">
+          <p className="font-sans text-xs sm:text-sm md:text-base lg:text-lg text-neutral-600 font-light leading-relaxed max-w-xl mt-0.5 sm:mt-1 md:mt-2 tracking-wide text-left">
             {activeBanner.subtitle}
           </p>
 
-          <div className="mt-4 md:mt-8 flex flex-wrap justify-start gap-6">
+          <div className="mt-3 sm:mt-4 md:mt-8 mb-2 md:mb-0 flex flex-wrap justify-start gap-4">
             <button 
               onClick={() => {
                 if (activeBanner.link) {
@@ -103,7 +103,7 @@ export default function HeroSlider({ onNavigate }: HeroSliderProps) {
                   onNavigate("shop");
                 }
               }}
-              className="px-6 py-3 md:px-10 md:py-3.5 bg-maroon-800 text-white hover:bg-maroon-900 rounded-md font-sans font-semibold text-[10px] md:text-[11px] uppercase tracking-[0.2em] shadow-md shadow-maroon-950/20 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+              className="px-6 py-2.5 sm:px-8 sm:py-3 md:px-10 md:py-3.5 bg-maroon-800 text-white hover:bg-maroon-900 rounded-md font-sans font-semibold text-[10px] md:text-[11px] uppercase tracking-[0.2em] shadow-md shadow-maroon-950/20 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
             >
               Discover Collection
             </button>
@@ -112,7 +112,7 @@ export default function HeroSlider({ onNavigate }: HeroSliderProps) {
       </div>
 
       {/* Background Image Stage - Right */}
-      <div className="flex-1 relative w-full h-[260px] sm:h-[320px] md:h-full order-1 md:order-2 overflow-hidden">
+      <div className="flex-1 relative w-full h-[220px] sm:h-[300px] md:h-full order-1 md:order-2 overflow-hidden">
         <div className="absolute inset-0 bg-neutral-950/5 z-10 pointer-events-none" />
         <img 
           src={activeBanner.image_url} 
@@ -126,24 +126,27 @@ export default function HeroSlider({ onNavigate }: HeroSliderProps) {
         <>
           <button 
             onClick={handlePrev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2.5 bg-white/80 hover:bg-white text-neutral-900 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 cursor-pointer shadow-sm border border-neutral-200"
+            className="absolute left-3 top-1/4 sm:top-1/3 md:top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 bg-white/80 hover:bg-white text-neutral-900 rounded-full transition-all duration-300 opacity-80 md:opacity-0 group-hover:opacity-100 cursor-pointer shadow-sm border border-neutral-200"
+            aria-label="Previous Slide"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button 
             onClick={handleNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2.5 bg-white/80 hover:bg-white text-neutral-900 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 cursor-pointer shadow-sm border border-neutral-200"
+            className="absolute right-3 top-1/4 sm:top-1/3 md:top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 bg-white/80 hover:bg-white text-neutral-900 rounded-full transition-all duration-300 opacity-80 md:opacity-0 group-hover:opacity-100 cursor-pointer shadow-sm border border-neutral-200"
+            aria-label="Next Slide"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
-          {/* Indicators */}
-          <div className="absolute bottom-6 left-4 md:left-16 z-30 flex gap-2">
+          {/* Indicators with ample breathing room from hero button */}
+          <div className="absolute bottom-4 sm:bottom-6 left-5 sm:left-10 md:left-16 z-30 flex items-center gap-2 bg-white/80 md:bg-transparent backdrop-blur-xs md:backdrop-blur-none px-2.5 py-1.5 md:p-0 rounded-full border border-neutral-200/60 md:border-0 shadow-xs md:shadow-none">
             {banners.map((_, idx) => (
               <button 
                 key={idx}
                 onClick={() => setCurrent(idx)}
-                className={`w-2.5 h-2.5 rounded-full border border-neutral-400 transition-all duration-300 cursor-pointer ${idx === current ? "bg-maroon-800 w-6 border-maroon-800" : "bg-transparent"}`}
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${idx === current ? "bg-maroon-800 w-6" : "bg-neutral-300 hover:bg-neutral-400 w-2"}`}
+                aria-label={`Slide ${idx + 1}`}
               />
             ))}
           </div>

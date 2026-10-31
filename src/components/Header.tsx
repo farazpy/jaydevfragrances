@@ -23,6 +23,7 @@ export default function Header({ user, cart, wishlistLength, onNavigate, onLogou
   
   const [logoError, setLogoError] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const headerContainerRef = useRef<HTMLElement>(null);
 
   // Calculate cart items total
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -59,11 +60,14 @@ export default function Header({ user, cart, wishlistLength, onNavigate, onLogou
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
 
-  // Close search suggestions on click outside
+  // Close search suggestions and mobile dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
+      }
+      if (headerContainerRef.current && !headerContainerRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -87,36 +91,41 @@ export default function Header({ user, cart, wishlistLength, onNavigate, onLogou
   return (
     <>
       {/* Floating Glassmorphism Header */}
-      <header className="sticky top-2 z-50 px-3 sm:px-4 py-1.5 max-w-[1440px] mx-auto w-full transition-all duration-300">
-        <div className="glass-header rounded-2xl sm:rounded-3xl px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between transition-all duration-300">
+      <header ref={headerContainerRef} className="sticky top-2 z-50 px-3 sm:px-4 py-1.5 max-w-[1440px] mx-auto w-full transition-all duration-300">
+        <div className="glass-header rounded-2xl sm:rounded-3xl px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between transition-all duration-300">
           
           {/* Logo & Brand Name */}
           <div 
             onClick={() => onNavigate('home')} 
-            className="flex items-center gap-2.5 cursor-pointer group shrink-0"
+            className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group shrink-0"
           >
             {settings?.logo_light && !logoError ? (
-              <img 
-                src={settings.logo_light} 
-                alt="Jaydev Fragrances Logo" 
-                className="h-[60px] object-contain" 
-                onError={() => setLogoError(true)}
-              />
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <img 
+                  src={settings.logo_light} 
+                  alt="Jaydev Fragrances Logo" 
+                  className="h-[46px] sm:h-[60px] object-contain" 
+                  onError={() => setLogoError(true)}
+                />
+                <span className="text-[9px] font-mono font-bold bg-maroon-50 text-maroon-800 border border-maroon-200 px-1.5 py-0.5 rounded-md self-center">
+                  v1.7.7
+                </span>
+              </div>
             ) : (
               <>
-                <div className="w-12 h-12 bg-maroon-800 text-white flex items-center justify-center rounded-xl border border-maroon-700 shadow-sm group-hover:scale-105 transition-transform duration-300">
-                  <span className="font-serif font-bold text-xl tracking-widest text-amber-200">J</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-maroon-800 text-white flex items-center justify-center rounded-xl border border-maroon-700 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                  <span className="font-serif font-bold text-lg sm:text-xl tracking-widest text-amber-200">J</span>
                 </div>
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <span className="font-serif text-base font-bold tracking-[0.18em] text-neutral-900 group-hover:text-maroon-800 transition-colors duration-300">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <span className="font-serif text-sm sm:text-base font-bold tracking-[0.14em] sm:tracking-[0.18em] text-neutral-900 group-hover:text-maroon-800 transition-colors duration-300">
                       JAYDEV FRAGRANCES
                     </span>
                     <span className="text-[9px] font-mono font-bold bg-maroon-50 text-maroon-800 border border-maroon-200 px-1.5 py-0.5 rounded-md">
-                      v1.7.6
+                      v1.7.7
                     </span>
                   </div>
-                  <span className="text-[8px] font-sans font-bold tracking-[0.3em] text-maroon-800 uppercase leading-none mt-0.5">
+                  <span className="hidden xs:block text-[7px] sm:text-[8px] font-sans font-bold tracking-[0.25em] sm:tracking-[0.3em] text-maroon-800 uppercase leading-none mt-0.5">
                     Divine Agarbatti, Dhoop & Kapoor
                   </span>
                 </div>
@@ -377,220 +386,242 @@ export default function Header({ user, cart, wishlistLength, onNavigate, onLogou
             {/* Mobile Menu Button */}
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
-              className="lg:hidden p-1.5 text-neutral-700 hover:text-black cursor-pointer"
+              className={`lg:hidden p-2 rounded-xl transition-all duration-200 cursor-pointer ${isMobileMenuOpen ? 'bg-maroon-50 text-maroon-800' : 'text-neutral-700 hover:text-maroon-800 hover:bg-neutral-100/50'}`}
+              aria-label="Toggle Navigation Menu"
+              aria-expanded={isMobileMenuOpen}
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <X className="w-5 h-5 stroke-[2.5]" /> : <Menu className="w-5 h-5 stroke-[2.5]" />}
             </button>
 
           </div>
         </div>
-      </header>
 
-      {/* Mobile Drawer Menu */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm">
-          <div className="fixed inset-y-0 right-0 w-4/5 max-w-sm bg-white shadow-2xl p-6 overflow-y-auto animate-slide-in flex flex-col justify-between z-[70]">
-            <div>
-              <div className="flex justify-between items-center pb-6 border-b border-neutral-100">
-                <span className="font-sans font-bold text-sm tracking-[0.25em] text-neutral-950">JAYDEV FRAGRANCES</span>
-                <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 text-neutral-500 hover:text-black">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Mobile Search */}
-              <div className="my-6">
-                <form onSubmit={handleSearchSubmit}>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search fragrance..."
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        setShowSuggestions(true);
-                      }}
-                      onFocus={() => setShowSuggestions(true)}
-                      className="w-full pl-9 pr-4 py-2 border border-neutral-200 rounded-full text-xs font-sans bg-neutral-50 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500 transition-all duration-300"
-                    />
-                    <Search className="absolute left-3.5 top-3 w-3.5 h-3.5 text-neutral-400" />
-                    {searchQuery && (
-                      <button 
-                        type="button" 
-                        onClick={() => setSearchQuery('')}
-                        className="absolute right-3.5 top-2.5 text-gray-400 hover:text-black text-xs font-bold"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                </form>
-
-                {/* Suggestions dropdown for mobile */}
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="w-full bg-white border border-gray-100 rounded-lg shadow-sm py-2 mt-2 max-h-64 overflow-y-auto relative z-50">
-                    {suggestions.map((p) => (
-                      <div
-                        key={p.id}
-                        onClick={() => {
-                          handleSuggestionClick(p.slug);
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className="px-3 py-2 hover:bg-gold-50/40 cursor-pointer flex items-center gap-2 transition-colors border-b border-neutral-50 last:border-0"
-                      >
-                        <img src={p.primary_image} alt={p.name} className="w-8 h-8 rounded object-cover" />
-                        <div className="flex flex-col flex-1 min-w-0">
-                          <span className="text-xs font-sans font-semibold text-neutral-800 truncate">{p.name}</span>
-                        </div>
-                      </div>
-                    ))}
-                    <div className="px-3 pt-2 text-center border-t border-neutral-50 mt-1">
-                      <span 
-                        onClick={() => {
-                          onNavigate('shop', `search=${encodeURIComponent(searchQuery)}`);
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className="text-[10px] font-sans font-bold uppercase tracking-widest text-gold-500 hover:text-gold-600 cursor-pointer"
-                      >
-                        View all results
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Navigation Menu Links */}
-              <nav className="flex flex-col gap-4 font-sans text-[11px] uppercase tracking-[0.18em] text-neutral-800">
-                <span 
-                  onClick={() => { onNavigate('home'); setIsMobileMenuOpen(false); }} 
-                  className="cursor-pointer py-1.5 border-b border-neutral-50 hover:text-gold-500 block font-semibold"
-                >
-                  Home
-                </span>
-                
-                {/* Categories with collapsible accordion */}
-                <div className="border-b border-neutral-50 pb-1.5">
-                  <button 
-                    onClick={() => setIsCategoriesDropdownOpen(!isCategoriesDropdownOpen)}
-                    className="w-full flex items-center justify-between text-left py-1.5 font-semibold text-neutral-800 hover:text-gold-500"
-                  >
-                    <span>Categories</span>
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isCategoriesDropdownOpen ? 'transform rotate-180' : ''}`} />
-                  </button>
-                  
-                  {isCategoriesDropdownOpen && (
-                    <div className="pl-4 mt-2 flex flex-col gap-3 font-sans normal-case text-xs text-neutral-600 border-l border-neutral-100">
-                      {categories.map((cat: any) => (
-                        <div key={cat.id} className="flex flex-col gap-1.5">
-                          <button
-                            onClick={() => { onNavigate("shop", `category=${cat.slug || cat.id}`); setIsMobileMenuOpen(false); }}
-                            className="text-left font-semibold text-neutral-800 hover:text-gold-600 flex items-center justify-between"
-                          >
-                            <span>{cat.name}</span>
-                          </button>
-                          
-                          {cat.subcategories && cat.subcategories.length > 0 && (
-                            <div className="pl-3 flex flex-col gap-1.5 border-l border-neutral-50 mt-1">
-                              {cat.subcategories.map((sub: any) => (
-                                <button
-                                  key={sub.id}
-                                  onClick={() => { onNavigate("shop", `category=${cat.slug || cat.id}&subcategory=${sub.slug || sub.id}`); setIsMobileMenuOpen(false); }}
-                                  className="text-left text-[11px] text-neutral-500 hover:text-neutral-950"
-                                >
-                                  {sub.name}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      {categories.length === 0 && (
-                        <span className="text-[10px] text-neutral-400 italic">No categories found</span>
-                      )}
-                    </div>
+        {/* Mobile Navigation Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden mt-2 w-full bg-white/98 backdrop-blur-2xl border border-neutral-200/90 rounded-2xl shadow-2xl p-4 sm:p-5 z-50 overflow-y-auto max-h-[80vh] animate-fadeIn transition-all duration-300">
+            {/* Mobile Search */}
+            <div className="mb-4">
+              <form onSubmit={handleSearchSubmit}>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search premium fragrances..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    className="w-full pl-9 pr-8 py-2.5 border border-neutral-200 rounded-xl text-xs font-sans bg-neutral-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-maroon-800 focus:border-maroon-800 transition-all duration-300"
+                  />
+                  <Search className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
+                  {searchQuery && (
+                    <button 
+                      type="button" 
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-2.5 text-neutral-400 hover:text-black text-xs font-bold"
+                    >
+                      ✕
+                    </button>
                   )}
                 </div>
-                
-                <span 
-                  onClick={() => { onNavigate('page', 'faqs'); setIsMobileMenuOpen(false); }} 
-                  className="cursor-pointer py-1.5 border-b border-neutral-50 hover:text-gold-500 block font-semibold"
-                >
-                  FAQs
-                </span>
-                <span 
-                  onClick={() => { onNavigate('contact'); setIsMobileMenuOpen(false); }} 
-                  className="cursor-pointer py-1.5 border-b border-neutral-50 hover:text-gold-500 block font-semibold"
-                >
-                  Contact
-                </span>
-                <span 
-                  onClick={() => { onNavigate('page', 'about-us'); setIsMobileMenuOpen(false); }} 
-                  className="cursor-pointer py-1.5 hover:text-gold-500 block font-semibold"
-                >
-                  About Us
-                </span>
-              </nav>
-            </div>
+              </form>
 
-            {/* Mobile Footer Area */}
-            <div className="border-t border-neutral-100 pt-6 mt-6">
-              {user ? (
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 bg-neutral-950 text-white flex items-center justify-center rounded-full font-sans font-bold text-xs border border-gold-500">
-                      {user.name.charAt(0)}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-sans font-bold text-neutral-800">{user.name}</span>
-                      <span className="text-[10px] font-mono text-neutral-400">{user.email}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <button 
-                      onClick={() => { onNavigate('account'); setIsMobileMenuOpen(false); }}
-                      className="text-center py-2 bg-neutral-50 hover:bg-neutral-100 rounded text-xs font-sans font-semibold text-neutral-700"
+              {/* Suggestions dropdown for mobile */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="w-full bg-white border border-gray-100 rounded-xl shadow-lg py-2 mt-2 max-h-56 overflow-y-auto relative z-50">
+                  {suggestions.map((p) => (
+                    <div
+                      key={p.id}
+                      onClick={() => {
+                        handleSuggestionClick(p.slug);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="px-3 py-2 hover:bg-maroon-50/50 cursor-pointer flex items-center gap-2.5 transition-colors border-b border-neutral-50 last:border-0"
                     >
-                      Dashboard
+                      <img src={p.primary_image} alt={p.name} className="w-8 h-8 rounded object-cover" />
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <span className="text-xs font-sans font-semibold text-neutral-800 truncate">{p.name}</span>
+                        <span className="text-[10px] font-mono text-maroon-800 font-bold">₹{p.sale_price || p.price}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="px-3 pt-2 text-center border-t border-neutral-50 mt-1">
+                    <button 
+                      onClick={() => {
+                        onNavigate('shop', `search=${encodeURIComponent(searchQuery)}`);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="text-[10px] font-sans font-bold uppercase tracking-widest text-maroon-800 hover:underline cursor-pointer"
+                    >
+                      View all matching fragrances →
                     </button>
-                    {user.role === 'admin' && (
-                      <button 
-                        onClick={() => { onNavigate('admin'); setIsMobileMenuOpen(false); }}
-                        className="text-center py-2 bg-gold-50/50 hover:bg-gold-100/50 rounded text-xs font-sans font-bold text-gold-700"
-                      >
-                        Admin Panel
-                      </button>
-                    )}
                   </div>
-
-                  <button 
-                    onClick={() => { onLogout(); setIsMobileMenuOpen(false); }}
-                    className="w-full text-center py-2 border border-red-100 text-red-600 hover:bg-red-50 rounded text-xs font-sans mt-1 flex items-center justify-center gap-1.5 font-semibold"
-                  >
-                    <LogOut className="w-3.5 h-3.5" /> Logout Account
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  <button 
-                    onClick={() => { onNavigate('login'); setIsMobileMenuOpen(false); }}
-                    className="w-full text-center py-2.5 bg-neutral-950 text-white rounded text-xs font-sans font-bold tracking-[0.18em] uppercase hover:bg-neutral-900 transition-all duration-300"
-                  >
-                    Login
-                  </button>
-                  <button 
-                    onClick={() => { onNavigate('register'); setIsMobileMenuOpen(false); }}
-                    className="w-full text-center py-2.5 border border-neutral-950 text-neutral-950 rounded text-xs font-sans font-bold tracking-[0.18em] uppercase hover:bg-neutral-50 transition-all duration-300"
-                  >
-                    Register Account
-                  </button>
                 </div>
               )}
             </div>
 
+            {/* Navigation Menu Links */}
+            <nav className="flex flex-col gap-1 font-sans text-xs uppercase tracking-[0.14em] text-neutral-800">
+              <button 
+                onClick={() => { onNavigate('home'); setIsMobileMenuOpen(false); }} 
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl transition-colors font-bold flex items-center justify-between ${currentPage === 'home' ? 'bg-maroon-50 text-maroon-800' : 'hover:bg-neutral-50 text-neutral-800'}`}
+              >
+                <span>Home</span>
+                {currentPage === 'home' && <span className="w-1.5 h-1.5 rounded-full bg-maroon-800" />}
+              </button>
+              
+              {/* Categories with collapsible accordion */}
+              <div className="rounded-xl overflow-hidden border border-neutral-100/80 my-0.5">
+                <button 
+                  onClick={() => setIsCategoriesDropdownOpen(!isCategoriesDropdownOpen)}
+                  className="w-full flex items-center justify-between text-left px-3.5 py-2.5 font-bold text-neutral-800 hover:bg-neutral-50 transition-colors uppercase tracking-[0.14em]"
+                >
+                  <span className="flex items-center gap-2">
+                    <span>Fragrance Categories</span>
+                    {categories.length > 0 && (
+                      <span className="text-[9px] bg-maroon-100 text-maroon-800 px-1.5 py-0.5 rounded-md font-mono font-bold">
+                        {categories.length}
+                      </span>
+                    )}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-neutral-500 transition-transform duration-300 ${isCategoriesDropdownOpen ? 'transform rotate-180 text-maroon-800' : ''}`} />
+                </button>
+                
+                {isCategoriesDropdownOpen && (
+                  <div className="bg-neutral-50/80 px-3.5 py-2 flex flex-col gap-2 font-sans normal-case text-xs text-neutral-600 border-t border-neutral-100 animate-fadeIn">
+                    {categories.map((cat: any) => (
+                      <div key={cat.id} className="flex flex-col gap-1">
+                        <button
+                          onClick={() => { onNavigate("shop", `category=${cat.slug || cat.id}`); setIsMobileMenuOpen(false); }}
+                          className="text-left font-semibold text-neutral-900 hover:text-maroon-800 py-1 flex items-center justify-between"
+                        >
+                          <span>{cat.name}</span>
+                          {cat.subcategories && cat.subcategories.length > 0 && (
+                            <span className="text-[10px] text-neutral-400 font-mono">({cat.subcategories.length})</span>
+                          )}
+                        </button>
+                        
+                        {cat.subcategories && cat.subcategories.length > 0 && (
+                          <div className="pl-3 flex flex-col gap-1 border-l-2 border-maroon-200 ml-1 py-0.5">
+                            {cat.subcategories.map((sub: any) => (
+                              <button
+                                key={sub.id}
+                                onClick={() => { onNavigate("shop", `category=${cat.slug || cat.id}&subcategory=${sub.slug || sub.id}`); setIsMobileMenuOpen(false); }}
+                                className="text-left text-[11px] text-neutral-500 hover:text-maroon-800 py-0.5"
+                              >
+                                • {sub.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {categories.length === 0 && (
+                      <span className="text-[10px] text-neutral-400 italic py-1">No categories currently configured</span>
+                    )}
+                    <button
+                      onClick={() => { onNavigate('shop'); setIsMobileMenuOpen(false); }}
+                      className="mt-1 text-left text-[11px] font-bold text-maroon-800 hover:underline uppercase tracking-wider py-1 border-t border-neutral-200/50 pt-2"
+                    >
+                      View All Categories & Products →
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button 
+                onClick={() => { onNavigate('shop'); setIsMobileMenuOpen(false); }} 
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl transition-colors font-bold flex items-center justify-between ${currentPage === 'shop' ? 'bg-maroon-50 text-maroon-800' : 'hover:bg-neutral-50 text-neutral-800'}`}
+              >
+                <span>Shop All Products</span>
+                {currentPage === 'shop' && <span className="w-1.5 h-1.5 rounded-full bg-maroon-800" />}
+              </button>
+              
+              <button 
+                onClick={() => { onNavigate('page', 'faqs'); setIsMobileMenuOpen(false); }} 
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl transition-colors font-bold flex items-center justify-between ${currentPage === 'page' && currentSlug === 'faqs' ? 'bg-maroon-50 text-maroon-800' : 'hover:bg-neutral-50 text-neutral-800'}`}
+              >
+                <span>FAQs</span>
+                {currentPage === 'page' && currentSlug === 'faqs' && <span className="w-1.5 h-1.5 rounded-full bg-maroon-800" />}
+              </button>
+
+              <button 
+                onClick={() => { onNavigate('contact'); setIsMobileMenuOpen(false); }} 
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl transition-colors font-bold flex items-center justify-between ${currentPage === 'contact' ? 'bg-maroon-50 text-maroon-800' : 'hover:bg-neutral-50 text-neutral-800'}`}
+              >
+                <span>Contact</span>
+                {currentPage === 'contact' && <span className="w-1.5 h-1.5 rounded-full bg-maroon-800" />}
+              </button>
+
+              <button 
+                onClick={() => { onNavigate('page', 'about-us'); setIsMobileMenuOpen(false); }} 
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl transition-colors font-bold flex items-center justify-between ${currentPage === 'page' && currentSlug === 'about-us' ? 'bg-maroon-50 text-maroon-800' : 'hover:bg-neutral-50 text-neutral-800'}`}
+              >
+                <span>About Our Heritage</span>
+                {currentPage === 'page' && currentSlug === 'about-us' && <span className="w-1.5 h-1.5 rounded-full bg-maroon-800" />}
+              </button>
+            </nav>
+
+            {/* Mobile Footer / User Auth Area */}
+            <div className="border-t border-neutral-100 pt-3.5 mt-3">
+              {user ? (
+                <div className="flex flex-col gap-2.5 bg-neutral-50 p-3 rounded-xl border border-neutral-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 bg-maroon-800 text-white flex items-center justify-center rounded-lg font-serif font-bold text-sm shadow-xs">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs font-sans font-bold text-neutral-900 truncate">{user.name}</span>
+                      <span className="text-[10px] font-mono text-neutral-500 truncate">{user.email}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    <button 
+                      onClick={() => { onNavigate('account'); setIsMobileMenuOpen(false); }}
+                      className="text-center py-2 bg-white border border-neutral-200 hover:bg-neutral-100 rounded-lg text-xs font-sans font-bold text-neutral-700 shadow-xs cursor-pointer"
+                    >
+                      Dashboard
+                    </button>
+                    <button 
+                      onClick={() => { onNavigate('account', 'tab=orders'); setIsMobileMenuOpen(false); }}
+                      className="text-center py-2 bg-white border border-neutral-200 hover:bg-neutral-100 rounded-lg text-xs font-sans font-bold text-neutral-700 shadow-xs cursor-pointer"
+                    >
+                      My Orders
+                    </button>
+                  </div>
+
+                  {user.role === 'admin' && (
+                    <button 
+                      onClick={() => { onNavigate('admin'); setIsMobileMenuOpen(false); }}
+                      className="w-full text-center py-2 bg-maroon-800 hover:bg-maroon-900 text-white rounded-lg text-xs font-sans font-bold tracking-wider uppercase shadow-xs cursor-pointer"
+                    >
+                      Admin Control Center
+                    </button>
+                  )}
+
+                  <button 
+                    onClick={() => { onLogout(); setIsMobileMenuOpen(false); }}
+                    className="w-full text-center py-1.5 text-red-600 hover:bg-red-50 rounded-lg text-xs font-sans font-semibold flex items-center justify-center gap-1.5 transition-colors mt-0.5 cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" /> Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <button 
+                    onClick={() => { onNavigate('login'); setIsMobileMenuOpen(false); }}
+                    className="w-full text-center py-2.5 bg-maroon-800 text-white rounded-xl text-xs font-sans font-bold tracking-[0.18em] uppercase hover:bg-maroon-900 shadow-md shadow-maroon-950/20 transition-all duration-300 cursor-pointer"
+                  >
+                    Customer Sign In / Register
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </header>
     </>
   );
 }
