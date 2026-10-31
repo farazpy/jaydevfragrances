@@ -37,7 +37,7 @@ export default function Contact({ onNavigate }: ContactProps) {
 
   return (
     <div className="bg-white min-h-screen py-12 font-serif">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Page Banner Title */}
         <div className="text-center max-w-xl mx-auto mb-16">

@@ -9,22 +9,27 @@ interface CartProps {
   onNavigate: (page: string, slug?: string) => void;
   onApplyCoupon: (couponCode: string, discountAmount: number, discountType: string) => void;
   coupon: { code: string; amount: number; type: string } | null;
+  settings?: any;
 }
 
-export default function Cart({ cart, onUpdateQty, onRemoveItem, onNavigate, onApplyCoupon, coupon }: CartProps) {
+export default function Cart({ cart, onUpdateQty, onRemoveItem, onNavigate, onApplyCoupon, coupon, settings }: CartProps) {
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState('');
   const [couponSuccess, setCouponSuccess] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
 
   // Subtotal calculations
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = cart.reduce((sum, item) => sum + ((item.sale_price || item.price || 0) * item.quantity), 0);
   
   // Tax calculations (18% GST standard on luxury perfumes)
   const tax = Math.round(subtotal * 0.18);
   
-  // Free shipping over 1499, otherwise standard 150
-  const shipping = (subtotal >= 1499 || subtotal === 0) ? 0 : 150;
+  // Use store settings for shipping or defaults
+  const shippingCharge = Number(settings?.shipping_charge) || 150;
+  const shippingThreshold = Number(settings?.shipping_threshold) || 1499;
+  
+  // Free shipping over threshold, otherwise standard charge
+  const shipping = (subtotal >= shippingThreshold || subtotal === 0) ? 0 : shippingCharge;
 
   // Coupon calculations
   let couponDiscount = 0;
@@ -88,7 +93,7 @@ export default function Cart({ cart, onUpdateQty, onRemoveItem, onNavigate, onAp
 
   return (
     <div className="bg-white min-h-screen py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         
         <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 uppercase mb-10 text-center md:text-left">
           YOUR SHOPPING BAG
@@ -160,9 +165,9 @@ export default function Cart({ cart, onUpdateQty, onRemoveItem, onNavigate, onAp
                   {/* Pricing row */}
                   <div className="text-right flex flex-col justify-center min-w-20">
                     <span className="text-[9px] font-mono text-gray-400 uppercase tracking-wider block">Line Total</span>
-                    <span className="font-mono text-sm font-bold text-yellow-700 mt-0.5">₹{Math.round(item.price * item.quantity)}</span>
+                    <span className="font-mono text-sm font-bold text-yellow-700 mt-0.5">₹{Math.round((item.sale_price || item.price || 0) * item.quantity)}</span>
                     {item.quantity > 1 && (
-                      <span className="text-[10px] font-mono text-gray-400">₹{Math.round(item.price)} each</span>
+                      <span className="text-[10px] font-mono text-gray-400">₹{Math.round(item.sale_price || item.price || 0)} each</span>
                     )}
                   </div>
 

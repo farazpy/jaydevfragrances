@@ -33,6 +33,7 @@ export default function ProductDetail({ slug, onNavigate, onAddToCart, onToggleW
 
   // Loaded state
   const [loading, setLoading] = useState(true);
+  const [addedToast, setAddedToast] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -42,15 +43,28 @@ export default function ProductDetail({ slug, onNavigate, onAddToCart, onToggleW
         if (data && data.product) {
           setProduct(data.product);
           setImages(data.images || []);
-          setVariants(data.variants || []);
+          
+          const rawVariants = data.variants && data.variants.length > 0 ? data.variants : [
+            {
+              id: 0,
+              product_id: data.product.id,
+              size: 'Standard Box',
+              volume: null,
+              mrp: parseFloat(data.product.max_mrp || '499'),
+              sale_price: parseFloat(data.product.min_price || '299'),
+              stock: 50
+            }
+          ];
+          setVariants(rawVariants);
+          setSelectedVariant(rawVariants[0]);
+
           setReviews(data.reviews || []);
           setRelated(data.related || []);
           
           if (data.images && data.images.length > 0) {
             setSelectedImage(data.images[0].image_url);
-          }
-          if (data.variants && data.variants.length > 0) {
-            setSelectedVariant(data.variants[0]);
+          } else if (data.product.primary_image) {
+            setSelectedImage(data.product.primary_image);
           }
         }
       })
@@ -59,12 +73,17 @@ export default function ProductDetail({ slug, onNavigate, onAddToCart, onToggleW
   }, [slug]);
 
   const handleAddBag = () => {
-    if (!product || !selectedVariant) return;
-    onAddToCart(product.id, selectedVariant.id, qty);
+    if (!product) return;
+    const vId = selectedVariant?.id || (variants.length > 0 ? variants[0].id : 0);
+    onAddToCart(product.id, vId, qty);
+    setAddedToast(true);
+    setTimeout(() => setAddedToast(false), 2500);
   };
+
   const handleBuyNow = () => {
-    if (!product || !selectedVariant) return;
-    onAddToCart(product.id, selectedVariant.id, qty);
+    if (!product) return;
+    const vId = selectedVariant?.id || (variants.length > 0 ? variants[0].id : 0);
+    onAddToCart(product.id, vId, qty);
     onNavigate("checkout");
   };
 
@@ -122,7 +141,7 @@ export default function ProductDetail({ slug, onNavigate, onAddToCart, onToggleW
 
   if (!product) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+      <div className="max-w-[1440px] mx-auto px-4 py-20 text-center">
         <AlertTriangle className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
         <h3 className="font-serif text-lg font-bold text-gray-800">Product Not Found</h3>
         <button onClick={() => onNavigate('shop')} className="mt-4 px-6 py-2.5 bg-black text-white rounded-full text-xs font-mono font-bold uppercase tracking-wider">
@@ -137,7 +156,7 @@ export default function ProductDetail({ slug, onNavigate, onAddToCart, onToggleW
 
   return (
     <div className="bg-white min-h-screen py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs font-mono text-gray-400 mb-8 uppercase tracking-wider">
@@ -324,13 +343,26 @@ export default function ProductDetail({ slug, onNavigate, onAddToCart, onToggleW
               )}
             </div>
 
-            {/* Cart & Wishlist action drawers */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-2">
-            </div>
+            {/* Cart & Wishlist action buttons */}
+            {addedToast && (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center justify-between animate-fadeIn">
+                <span className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  Added to your Luxury Bag!
+                </span>
+                <button 
+                  onClick={() => onNavigate('cart')}
+                  className="text-xs uppercase tracking-wider font-bold underline hover:text-emerald-900 cursor-pointer"
+                >
+                  View Bag
+                </button>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row gap-4 mt-2">
               <button
                 onClick={handleBuyNow}
-                disabled={!selectedVariant || selectedVariant.stock <= 0}
+                disabled={Boolean(selectedVariant && Number(selectedVariant.stock) <= 0)}
                 className="flex-1 py-4 bg-yellow-600 hover:bg-yellow-700 text-white font-serif font-bold text-xs uppercase tracking-widest rounded-full shadow hover:scale-102 active:scale-98 transition-all duration-300 disabled:opacity-40 disabled:hover:bg-yellow-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ShoppingBag className="w-4 h-4" /> Buy Now
@@ -338,7 +370,7 @@ export default function ProductDetail({ slug, onNavigate, onAddToCart, onToggleW
 
               <button
                 onClick={handleAddBag}
-                disabled={!selectedVariant || selectedVariant.stock <= 0}
+                disabled={Boolean(selectedVariant && Number(selectedVariant.stock) <= 0)}
                 className="flex-1 py-4 bg-black hover:bg-yellow-600 text-white font-serif font-bold text-xs uppercase tracking-widest rounded-full shadow hover:scale-102 active:scale-98 transition-all duration-300 disabled:opacity-40 disabled:hover:bg-black disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ShoppingBag className="w-4 h-4" /> Add to Luxury Bag

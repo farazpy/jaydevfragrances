@@ -15,7 +15,15 @@ export async function bootstrapSchemaOnly() {
   try {
     // 1. Run migrations from schema.sql
     console.log('Executing database schema creation from schema.sql...');
-    const schemaPath = path.resolve(process.cwd(), 'src/db/schema.sql');
+    const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+    const cwd = !isBrowser ? process.cwd() : '';
+    
+    if (!cwd) {
+      console.warn('Skipping schema migration: not in a Node.js environment.');
+      return;
+    }
+
+    const schemaPath = path.resolve(cwd, 'src/db/schema.sql');
     if (fs.existsSync(schemaPath)) {
       const schemaSql = fs.readFileSync(schemaPath, 'utf8');
       

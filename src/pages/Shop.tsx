@@ -9,9 +9,10 @@ interface ShopProps {
   onToggleWishlist: (productId: number) => void;
   wishlist: number[];
   initialFilters?: string; // Query parameters like "category=1" or "search=Oud"
+  onAddToCart?: (productId: number, variantId: number, qty: number) => void;
 }
 
-export default function Shop({ onNavigate, onToggleWishlist, wishlist, initialFilters }: ShopProps) {
+export default function Shop({ onNavigate, onToggleWishlist, wishlist, initialFilters, onAddToCart }: ShopProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -115,7 +116,7 @@ export default function Shop({ onNavigate, onToggleWishlist, wishlist, initialFi
         </p>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col lg:flex-row gap-10">
           
           {/* Sidebars - Filters Column */}
@@ -274,6 +275,7 @@ export default function Shop({ onNavigate, onToggleWishlist, wishlist, initialFi
                       onNavigate={onNavigate}
                       onToggleWishlist={onToggleWishlist}
                       isWishlisted={wishlist.includes(product.id)}
+                      onQuickAdd={(p) => onAddToCart ? onAddToCart(p.id, 0, 1) : onNavigate('product', p.slug)}
                     />
                   ))}
                 </div>

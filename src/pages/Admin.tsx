@@ -101,6 +101,9 @@ export default function Admin({ user, onNavigate, onAuthSuccess, currentPath }: 
   const [wooConsumerSecret, setWooConsumerSecret] = useState('');
   const [razorpayKeyId, setRazorpayKeyId] = useState('');
   const [razorpayKeySecret, setRazorpayKeySecret] = useState('');
+  const [shippingCharge, setShippingCharge] = useState(150);
+  const [shippingThreshold, setShippingThreshold] = useState(1499);
+  const [enableCod, setEnableCod] = useState(true);
   const [syncingWoo, setSyncingWoo] = useState(false);
   
   // Catalog item editing state
@@ -456,6 +459,9 @@ export default function Admin({ user, onNavigate, onAuthSuccess, currentPath }: 
           setWooConsumerSecret(data.woo_consumer_secret || '');
           setRazorpayKeyId(data.razorpay_key_id || '');
           setRazorpayKeySecret(data.razorpay_key_secret || '');
+          setShippingCharge(Number(data.shipping_charge) || 150);
+          setShippingThreshold(Number(data.shipping_threshold) || 1499);
+          setEnableCod(data.enable_cod === '1' || data.enable_cod === 'true');
         }
       })
       .catch(err => console.error(err));
@@ -1411,7 +1417,10 @@ export default function Admin({ user, onNavigate, onAuthSuccess, currentPath }: 
           woo_consumer_key: wooConsumerKey,
           woo_consumer_secret: wooConsumerSecret,
           razorpay_key_id: razorpayKeyId,
-          razorpay_key_secret: razorpayKeySecret
+          razorpay_key_secret: razorpayKeySecret,
+          shipping_charge: shippingCharge,
+          shipping_threshold: shippingThreshold,
+          enable_cod: enableCod ? '1' : '0'
         })
       });
       if (res.ok) {
@@ -1695,7 +1704,7 @@ export default function Admin({ user, onNavigate, onAuthSuccess, currentPath }: 
       </aside>
 
       {/* Main Admin Work Area */}
-      <main className="flex-1 p-4 sm:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+      <main className="flex-1 p-4 sm:p-8 overflow-y-auto max-w-[1440px] mx-auto w-full">
         
         {/* ========================================================================= */}
         {/* TAB 1: OVERVIEW & STATS */}
@@ -3149,6 +3158,36 @@ export default function Admin({ user, onNavigate, onAuthSuccess, currentPath }: 
                 <p className="text-[10px] font-mono text-neutral-400 italic">
                   Enter your official Razorpay Key ID and Secret Key to accept UPI, Cards, NetBanking, and Wallets live.
                 </p>
+              </div>
+
+              <h3 className="text-base font-serif font-bold text-neutral-900 border-b border-neutral-100 pb-3 pt-4">
+                Shipping & Payment Policy
+              </h3>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-mono uppercase font-bold text-neutral-500">Standard Shipping Charge (₹)</label>
+                    <input
+                      type="number"
+                      value={shippingCharge}
+                      onChange={(e) => setShippingCharge(Number(e.target.value))}
+                      placeholder="150"
+                      className="bg-neutral-50 border border-neutral-200 rounded-xl px-3.5 py-2.5 text-xs font-mono focus:outline-none focus:border-yellow-500"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-mono uppercase font-bold text-neutral-500">Free Shipping Threshold (₹)</label>
+                    <input
+                      type="number"
+                      value={shippingThreshold}
+                      onChange={(e) => setShippingThreshold(Number(e.target.value))}
+                      placeholder="1499"
+                      className="bg-neutral-50 border border-neutral-200 rounded-xl px-3.5 py-2.5 text-xs font-mono focus:outline-none focus:border-yellow-500"
+                    />
+                  </div>
+                </div>
               </div>
 
               <h3 className="text-base font-serif font-bold text-neutral-900 border-b border-neutral-100 pb-3 pt-4">

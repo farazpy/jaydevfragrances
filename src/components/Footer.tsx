@@ -43,7 +43,7 @@ export default function Footer({ onNavigate, settings }: FooterProps) {
     <footer className="bg-neutral-900 text-neutral-300 font-sans border-t border-neutral-800">
       
       {/* 4 Core Value Propositions Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 border-b border-neutral-800 grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div className="w-full px-4 sm:px-6 lg:px-12 py-10 border-b border-neutral-800 grid grid-cols-2 md:grid-cols-4 gap-8">
         <div className="flex items-start gap-3.5">
           <div className="p-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-emerald-400 shadow-xs">
             <Feather className="w-5 h-5 text-emerald-400" />
@@ -86,7 +86,7 @@ export default function Footer({ onNavigate, settings }: FooterProps) {
       </div>
 
       {/* Main Footer Links & Newsletter Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div className="w-full px-4 sm:px-6 lg:px-12 py-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
         
         {/* Brand Column */}
         <div className="flex flex-col gap-4">
@@ -210,7 +210,7 @@ export default function Footer({ onNavigate, settings }: FooterProps) {
 
       {/* Bottom Copyright & Guarantee Area */}
       <div className="bg-neutral-950 border-t border-neutral-800 py-5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-3 text-[11px] text-neutral-400 font-mono">
+        <div className="w-full px-4 sm:px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center gap-3 text-[11px] text-neutral-400 font-mono">
           <p>© {currentYear} Jaydev Fragrances Private Limited. All Rights Reserved.</p>
           <div className="flex gap-4">
             <span onClick={() => onNavigate('page', 'privacy-policy')} className="hover:text-white cursor-pointer">Privacy Policy</span>

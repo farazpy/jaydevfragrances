@@ -35,7 +35,7 @@ export default function Wishlist({ onNavigate, onToggleWishlist, wishlist }: Wis
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center font-serif text-gray-400 animate-pulse">
+      <div className="max-w-[1440px] mx-auto px-4 py-20 text-center font-serif text-gray-400 animate-pulse">
         Retrieving your custom fragrance wishlist...
       </div>
     );
@@ -63,7 +63,7 @@ export default function Wishlist({ onNavigate, onToggleWishlist, wishlist }: Wis
 
   return (
     <div className="bg-white min-h-screen py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         
         <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 uppercase mb-10 text-center md:text-left">
           YOUR SCENT WISHLIST ({products.length})

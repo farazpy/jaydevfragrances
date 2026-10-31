@@ -209,15 +209,21 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
       
       {/* Database Connection Alert (Prominently displayed if MySQL is disconnected) */}
       {dbStatus && !dbStatus.connected && (
-        <DbConnectionAlert status={dbStatus} onRefresh={handleRefreshAll} />
+        <div className="w-full bg-red-50 border-b border-red-100 py-3">
+          <div className="max-w-[1440px] mx-auto px-4">
+            <DbConnectionAlert status={dbStatus} onRefresh={handleRefreshAll} />
+          </div>
+        </div>
       )}
 
       {/* 1. Hero Banner Slider Stage */}
-      <HeroSlider onNavigate={onNavigate} />
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <HeroSlider onNavigate={onNavigate} />
+      </div>
 
       {/* 2. Premium Grid of Colorful Agarbatti Value Props - Clean White Card */}
       <div className="bg-neutral-50 border-y border-neutral-100 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           
           <div className="p-4 rounded-xl bg-white border border-neutral-200/80 shadow-xs flex flex-col items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center font-bold shadow-xs">
@@ -263,7 +269,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
       </div>
 
       {/* 3. Agarbatti Craft Showcase Banner - White Card with Maroon Primary Accent */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="bg-white rounded-2xl p-8 sm:p-12 border border-neutral-200 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
           
           <div className="max-w-2xl relative z-10 flex flex-col items-start gap-4">
@@ -282,7 +288,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
             <div className="flex flex-wrap items-center gap-3 mt-2">
               <button
                 onClick={() => onNavigate('shop')}
-                className="btn-maroon btn-rounded px-6 py-3 text-xs uppercase tracking-wider shadow-sm flex items-center gap-2 cursor-pointer"
+                className="bg-maroon-800 hover:bg-maroon-900 text-white rounded-lg px-6 py-3 text-xs uppercase tracking-[0.2em] shadow-md shadow-maroon-950/20 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 cursor-pointer font-bold"
               >
                 <ShoppingBag className="w-4 h-4 text-amber-200" /> Shop Incense Collection
               </button>
@@ -295,11 +301,11 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
             </div>
           </div>
 
-          <div className="w-full md:w-80 h-64 rounded-xl overflow-hidden shadow-md shrink-0 border border-neutral-200">
+          <div className="w-full md:w-96 aspect-square rounded-2xl overflow-hidden shadow-lg shrink-0 border border-neutral-100 bg-white">
             <img 
-              src="https://images.unsplash.com/photo-1602928321679-560bb453f190?auto=format&fit=crop&q=80&w=800" 
-              alt="Handcrafted Agarbatti sticks" 
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" 
+              src="https://s3.htknetwork.in/f/aak2jfTD" 
+              alt="Handcrafted Agarbatti Combo Pack" 
+              className="w-full h-full object-contain hover:scale-105 transition-transform duration-500 p-4" 
             />
           </div>
 
@@ -307,7 +313,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
       </section>
 
       {/* 4. Featured Categories */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center max-w-xl mx-auto mb-10">
           <div className="inline-flex items-center gap-1.5 bg-maroon-50 px-3.5 py-1 rounded-full border border-maroon-200 text-[10px] font-sans uppercase tracking-[0.2em] text-maroon-800 font-bold mb-3">
             <Flame className="w-3.5 h-3.5 text-maroon-800" /> Handcrafted Divine Fragrances
@@ -361,7 +367,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
         if (products.length === 0) return null;
         return (
           <section key={cat.id} className="py-14 bg-white border-b border-neutral-100">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                 <div>
                   <div className="inline-block mb-1.5">
@@ -389,6 +395,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
                     onNavigate={onNavigate}
                     onToggleWishlist={onToggleWishlist}
                     isWishlisted={wishlist.includes(product.id)}
+                    onQuickAdd={(p) => onAddToCart ? onAddToCart(p.id, 0, 1) : onNavigate('product', p.slug)}
                   />
                 ))}
               </div>
@@ -399,7 +406,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
 
       {/* 5. Brand Heritage - Clean White Panel with Maroon Primary Accent */}
       <section className="bg-neutral-50 py-20 border-y border-neutral-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             
             <div className="flex flex-col items-start gap-4">
@@ -427,7 +434,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
 
             <div className="rounded-2xl overflow-hidden border border-neutral-200 shadow-sm aspect-4/3">
               <img 
-                src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&q=80&w=1000" 
+                src="https://s3.htknetwork.in/f/uUsuVFGV" 
                 alt="Sacred incense heritage" 
                 className="w-full h-full object-cover"
               />
@@ -438,7 +445,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
       </section>
 
       {/* 6. Dynamic Handcrafted Scent Grid (Featured Products) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center max-w-xl mx-auto mb-10">
           <div className="inline-flex items-center gap-1.5 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 text-[10px] font-sans uppercase tracking-[0.2em] text-amber-900 font-bold mb-3">
             <Sparkles className="w-3.5 h-3.5 text-amber-600" /> Handpicked Bestsellers
@@ -460,6 +467,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
                 onNavigate={onNavigate}
                 onToggleWishlist={onToggleWishlist}
                 isWishlisted={wishlist.includes(product.id)}
+                onQuickAdd={(p) => onAddToCart ? onAddToCart(p.id, 0, 1) : onNavigate('product', p.slug)}
               />
             ))
           ) : (
@@ -474,7 +482,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
 
       {/* 7. Customer Reviews & Testimonials - Clean White Cards */}
       <section className="bg-neutral-50 border-t border-neutral-200 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-xl mx-auto mb-10">
             <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-wide text-neutral-900 uppercase">
               VOICES OF <span className="highlight-maroon">DEVOTION</span>
@@ -547,7 +555,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
       </section>
 
       {/* 8. Recent Blogs Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-neutral-200">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-neutral-200">
         <div className="text-center max-w-xl mx-auto mb-10">
           <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-wide text-neutral-900 uppercase">
             THE SACRED AROMA <span className="highlight-saffron">JOURNAL</span>
@@ -589,8 +597,8 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
       </section>
 
       {/* 9. Interactive Newsletter Welcome Panel - Clean Primary Accent */}
-      <section className="bg-maroon-900 text-white py-16">
-        <div className="max-w-3xl mx-auto px-4 text-center flex flex-col items-center gap-4">
+      <section className="bg-maroon-900 text-white py-16 w-full">
+        <div className="w-full px-4 sm:px-10 md:px-20 text-center flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-maroon-800 border border-maroon-700 flex items-center justify-center text-amber-300 shadow-sm">
             <Mail className="w-5 h-5" />
           </div>

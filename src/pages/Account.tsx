@@ -89,7 +89,7 @@ export default function Account({ user, onNavigate, onLogout }: AccountProps) {
 
   return (
     <div className="bg-white min-h-screen py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="flex flex-col lg:flex-row gap-10">
           

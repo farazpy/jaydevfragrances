@@ -99,13 +99,13 @@ export default function Header({ user, cart, wishlistLength, onNavigate, onLogou
               <img 
                 src={settings.logo_light} 
                 alt="Jaydev Fragrances Logo" 
-                className="h-10 object-contain" 
+                className="h-[60px] object-contain" 
                 onError={() => setLogoError(true)}
               />
             ) : (
               <>
-                <div className="w-10 h-10 bg-maroon-800 text-white flex items-center justify-center rounded-xl border border-maroon-700 shadow-sm group-hover:scale-105 transition-transform duration-300">
-                  <span className="font-serif font-bold text-lg tracking-widest text-amber-200">J</span>
+                <div className="w-12 h-12 bg-maroon-800 text-white flex items-center justify-center rounded-xl border border-maroon-700 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                  <span className="font-serif font-bold text-xl tracking-widest text-amber-200">J</span>
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
@@ -113,7 +113,7 @@ export default function Header({ user, cart, wishlistLength, onNavigate, onLogou
                       JAYDEV FRAGRANCES
                     </span>
                     <span className="text-[9px] font-mono font-bold bg-maroon-50 text-maroon-800 border border-maroon-200 px-1.5 py-0.5 rounded-md">
-                      v1.6.4
+                      v1.7.6
                     </span>
                   </div>
                   <span className="text-[8px] font-sans font-bold tracking-[0.3em] text-maroon-800 uppercase leading-none mt-0.5">

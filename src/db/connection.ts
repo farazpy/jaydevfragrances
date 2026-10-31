@@ -20,14 +20,25 @@ export function loadEnvConfig(): { envPath: string | null; keys: string[] } {
     return { envPath: loadedEnvPath, keys: detectedEnvKeys };
   }
 
+  const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+  
+  const safeCwd = () => {
+    try {
+      return !isBrowser ? process.cwd() : '';
+    } catch {
+      return '';
+    }
+  };
+
+  const cwd = safeCwd();
+
   const candidateDirs = [
-    process.cwd(),
+    cwd,
     typeof __dirname !== 'undefined' ? __dirname : '',
     typeof __dirname !== 'undefined' ? path.resolve(__dirname, '..') : '',
     typeof __dirname !== 'undefined' ? path.resolve(__dirname, '../..') : '',
-    path.resolve(process.cwd(), '..'),
-    path.resolve(process.cwd(), '../..'),
-    '/app/applet'
+    cwd ? path.resolve(cwd, '..') : '',
+    cwd ? path.resolve(cwd, '../..') : ''
   ].filter(Boolean);
 
   const envFilenames = ['.env', '.env.production', '.env.local'];
@@ -51,8 +62,8 @@ export function loadEnvConfig(): { envPath: string | null; keys: string[] } {
   }
 
   // Fallback to standard dotenv
-  if (!loadedEnvPath) {
-    const defaultPath = path.resolve(process.cwd(), '.env');
+  if (!loadedEnvPath && cwd) {
+    const defaultPath = path.resolve(cwd, '.env');
     if (fs.existsSync(defaultPath)) {
       dotenv.config({ path: defaultPath, override: true });
       loadedEnvPath = defaultPath;
@@ -348,10 +359,9 @@ export async function testDbConnection(forceReconnect = false): Promise<DbStatus
       }
     }
 
-    // Generate targeted suggestions based on specific failure mode
     if (!envPath) {
       suggestions.push(
-        `No .env file was found in ${process.cwd()}. Create a .env file in your application root directory (where package.json is located).`
+        `No .env file was found. Create a .env file in your application root directory (where package.json is located).`
       );
     }
 

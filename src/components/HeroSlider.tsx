@@ -76,7 +76,7 @@ export default function HeroSlider({ onNavigate }: HeroSliderProps) {
   const activeBanner = banners[current];
 
   return (
-    <div className="relative w-full bg-[#fcfaf8] overflow-hidden group flex flex-col md:flex-row md:h-[600px] lg:h-[70vh]">
+    <div className="relative w-full bg-[#fcfaf8] overflow-hidden group flex flex-col md:flex-row md:h-[600px] lg:h-[70vh] rounded-[6px] border border-neutral-100 shadow-sm">
       
       {/* Slide Typography Content - Left */}
       <div className="flex-1 z-20 flex flex-col items-start justify-center p-6 sm:p-10 md:p-16 lg:p-24 animate-fade-in relative order-2 md:order-1">
@@ -103,7 +103,7 @@ export default function HeroSlider({ onNavigate }: HeroSliderProps) {
                   onNavigate("shop");
                 }
               }}
-              className="px-6 py-3 md:px-10 md:py-3.5 bg-neutral-950 text-white hover:bg-neutral-800 rounded-none font-sans font-medium text-[10px] md:text-[11px] uppercase tracking-[0.2em] shadow hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+              className="px-6 py-3 md:px-10 md:py-3.5 bg-maroon-800 text-white hover:bg-maroon-900 rounded-md font-sans font-semibold text-[10px] md:text-[11px] uppercase tracking-[0.2em] shadow-md shadow-maroon-950/20 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
             >
               Discover Collection
             </button>
@@ -143,7 +143,7 @@ export default function HeroSlider({ onNavigate }: HeroSliderProps) {
               <button 
                 key={idx}
                 onClick={() => setCurrent(idx)}
-                className={`w-2.5 h-2.5 rounded-full border border-neutral-400 transition-all duration-300 cursor-pointer ${idx === current ? "bg-neutral-950 w-6 border-neutral-950" : "bg-transparent"}`}
+                className={`w-2.5 h-2.5 rounded-full border border-neutral-400 transition-all duration-300 cursor-pointer ${idx === current ? "bg-maroon-800 w-6 border-maroon-800" : "bg-transparent"}`}
               />
             ))}
           </div>
