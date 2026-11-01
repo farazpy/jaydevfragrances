@@ -4,12 +4,14 @@ import {
   ShieldAlert, BarChart3, ShoppingBag, Settings, LogOut, Search, ChevronRight, 
   Edit, Plus, Trash2, Tag, Loader2, Sparkles, CheckCircle2, AlertTriangle, 
   ShieldCheck, RefreshCcw, Image, Layers, Lock, Filter, FolderPlus, ArrowLeft,
-  Eye, EyeOff, Ticket, Users, MessageSquare, Star, Clock, Flame, MapPin
+  Eye, EyeOff, Ticket, Users, MessageSquare, Star, Clock, Flame, MapPin, Scale, Table, SlidersHorizontal
 } from 'lucide-react';
 import { Product, Order, Category, Brand, AdminCoupon, AdminReview } from '../types.js';
 import AdminPinGate from '../components/admin/AdminPinGate.js';
 import DeleteConfirmModal from '../components/admin/DeleteConfirmModal.js';
 import S3FileUpload from '../components/common/S3FileUpload.js';
+import BulkEditModal from '../components/admin/BulkEditModal.js';
+import BatchGridEditorModal from '../components/admin/BatchGridEditorModal.js';
 
 interface AdminProps {
   user: any;
@@ -150,6 +152,8 @@ export default function Admin({ user, onNavigate, onAuthSuccess, currentPath }: 
   const [bulkCategory, setBulkCategory] = useState<number>(0);
   const [bulkPriceValue, setBulkPriceValue] = useState<number | ''>('');
   const [catalogError, setCatalogError] = useState<string>('');
+  const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
+  const [isBatchGridOpen, setIsBatchGridOpen] = useState(false);
 
   // WordPress / WooCommerce Coupons State
   const [coupons, setCoupons] = useState<AdminCoupon[]>([]);
@@ -2339,22 +2343,55 @@ export default function Admin({ user, onNavigate, onAuthSuccess, currentPath }: 
             {!isAddingProduct && !editingProduct && (
               <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
                 
-                {/* Bulk Actions Banner if selected */}
-                {selectedProducts.size > 0 && (
-                  <div className="bg-neutral-900 text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-                    <span className="font-semibold">
-                      {selectedProducts.size} item(s) selected
+                {/* Professional Bulk Actions Toolbar */}
+                <div className="bg-neutral-900 text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 text-xs border-b border-neutral-800">
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-yellow-400 font-mono flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
+                      {selectedProducts.size > 0 ? `${selectedProducts.size} item(s) selected` : `${filteredProducts.length} total catalog products`}
                     </span>
-                    <div className="flex items-center gap-2">
+                    {selectedProducts.size > 0 && (
                       <button
-                        onClick={() => handleBulkAction('delete')}
-                        className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                        type="button"
+                        onClick={() => setSelectedProducts(new Set())}
+                        className="text-[10px] text-neutral-400 hover:text-white underline cursor-pointer font-mono"
                       >
-                        <Trash2 className="w-3.5 h-3.5" /> Delete Selected
+                        Clear Selection
                       </button>
-                    </div>
+                    )}
                   </div>
-                )}
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsBulkEditModalOpen(true)}
+                      disabled={selectedProducts.size === 0}
+                      className="px-3.5 py-1.5 bg-yellow-500 hover:bg-yellow-400 text-neutral-950 font-bold rounded-xl uppercase tracking-wider flex items-center gap-1.5 cursor-pointer disabled:opacity-40 transition-all shadow-xs"
+                      title="Bulk edit weight, price, and category for selected products"
+                    >
+                      <SlidersHorizontal className="w-3.5 h-3.5" /> Bulk Edit Selected ({selectedProducts.size})
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsBatchGridOpen(true)}
+                      className="px-3.5 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-yellow-300 border border-neutral-700 font-bold rounded-xl uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-all"
+                      title="Open full interactive spreadsheet batch editor"
+                    >
+                      <Table className="w-3.5 h-3.5" /> Interactive Spreadsheet
+                    </button>
+
+                    {selectedProducts.size > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleBulkAction('delete')}
+                        className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete ({selectedProducts.size})
+                      </button>
+                    )}
+                  </div>
+                </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs font-sans text-neutral-600">
@@ -4159,6 +4196,31 @@ export default function Admin({ user, onNavigate, onAuthSuccess, currentPath }: 
         loading={loading}
         onConfirm={handleExecuteDelete}
         onCancel={() => setDeleteModal({ isOpen: false, type: 'product', item: null })}
+      />
+
+      {/* Professional Bulk Attribute Editor Modal */}
+      <BulkEditModal
+        isOpen={isBulkEditModalOpen}
+        onClose={() => setIsBulkEditModalOpen(false)}
+        selectedProductIds={Array.from(selectedProducts)}
+        selectedProductsList={products.filter(p => selectedProducts.has(p.id))}
+        categories={categories}
+        onSuccess={() => {
+          setSelectedProducts(new Set());
+          fetchProducts();
+        }}
+      />
+
+      {/* Interactive Spreadsheet Batch Editor Modal */}
+      <BatchGridEditorModal
+        isOpen={isBatchGridOpen}
+        onClose={() => setIsBatchGridOpen(false)}
+        productsList={selectedProducts.size > 0 ? products.filter(p => selectedProducts.has(p.id)) : filteredProducts}
+        categories={categories}
+        onSuccess={() => {
+          setSelectedProducts(new Set());
+          fetchProducts();
+        }}
       />
 
     </div>

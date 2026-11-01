@@ -130,7 +130,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
 
   useEffect(() => {
     if (categories.length > 0) {
-      const topCats = categories.slice(0, 5);
+      const topCats = categories.slice(0, 4);
       topCats.forEach(cat => {
         const catQuery = cat.slug ? `category=${cat.slug}` : `category=${cat.id}`;
         fetch(`/api/products?${catQuery}&limit=4`)
@@ -326,9 +326,9 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {categories.length > 0 ? (
-            categories.slice(0, 5).map((cat) => (
+            categories.slice(0, 4).map((cat) => (
               <div 
                 key={cat.id}
                 onClick={() => onNavigate('shop', `category=${cat.id}`)}
@@ -362,7 +362,7 @@ export default function Home({ onNavigate, onToggleWishlist, wishlist, onAddToCa
       </section>
 
       {/* Dynamic Category Sections */}
-      {categories.slice(0, 5).map((cat) => {
+      {categories.slice(0, 4).map((cat) => {
         const products = categoryProducts[cat.id] || [];
         if (products.length === 0) return null;
         return (

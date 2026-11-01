@@ -2505,50 +2505,219 @@ ${req.body.hint ? `Additional Admin Instructions/Context: ${req.body.hint}` : ''
     }
   });
 
-  app.post('/api/admin/products/bulk', requireAuth, requireAdmin, async (req: any, res: any) => {
+  // Enhanced Professional Product Bulk Edit API (Weight, Price, Category, Multi-field, Batch)
+  const handleBulkProductUpdate = async (req: any, res: any) => {
     try {
-      const { productIds, action, categoryId, priceValue } = req.body;
-      
-      if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
-        return res.status(400).json({ error: 'No products selected' });
+      const { 
+        productIds, action, 
+        categoryId, subcategoryId, 
+        weight, 
+        priceMode, priceValue, mrpValue, 
+        updates 
+      } = req.body;
+
+      // 1. Batch Spreadsheet Mode (Individual row updates in one request)
+      if (action === 'batch_spreadsheet' || Array.isArray(updates)) {
+        const itemsToUpdate = Array.isArray(updates) ? updates : [];
+        if (itemsToUpdate.length === 0) {
+          return res.status(400).json({ error: 'No items provided for batch update.' });
+        }
+
+        let updatedCount = 0;
+        for (const item of itemsToUpdate) {
+          const pId = parseInt(item.id || item.productId, 10);
+          if (!pId) continue;
+
+          // Prepare product fields update
+          const prodUpdates: string[] = [];
+          const prodParams: any[] = [];
+
+          if (item.weight !== undefined && item.weight !== null) {
+            prodUpdates.push('weight = ?');
+            prodParams.push(String(item.weight).trim());
+          }
+
+          if (item.categoryId !== undefined || item.category_id !== undefined) {
+            const catVal = item.categoryId !== undefined ? item.categoryId : item.category_id;
+            const { validCategoryId } = await resolveForeignKeyIds(null, catVal, null);
+            prodUpdates.push('category_id = ?');
+            prodParams.push(validCategoryId);
+          }
+
+          if (item.subcategoryId !== undefined || item.subcategory_id !== undefined) {
+            const subVal = item.subcategoryId !== undefined ? item.subcategoryId : item.subcategory_id;
+            const { validSubcategoryId } = await resolveForeignKeyIds(null, null, subVal);
+            prodUpdates.push('subcategory_id = ?');
+            prodParams.push(validSubcategoryId);
+          }
+
+          if (prodUpdates.length > 0) {
+            prodParams.push(pId);
+            await query(`UPDATE products SET ${prodUpdates.join(', ')} WHERE id = ?`, prodParams);
+          }
+
+          // Prepare variant pricing update
+          const sPrice = item.salePrice !== undefined ? parseFloat(item.salePrice) : (item.sale_price !== undefined ? parseFloat(item.sale_price) : null);
+          const mPrice = item.mrp !== undefined ? parseFloat(item.mrp) : null;
+
+          if (sPrice !== null || mPrice !== null) {
+            const varUpdates: string[] = [];
+            const varParams: any[] = [];
+
+            if (sPrice !== null && !isNaN(sPrice) && sPrice >= 0) {
+              varUpdates.push('sale_price = ?');
+              varParams.push(sPrice);
+            }
+            if (mPrice !== null && !isNaN(mPrice) && mPrice >= 0) {
+              varUpdates.push('mrp = ?');
+              varParams.push(mPrice);
+            }
+
+            if (varUpdates.length > 0) {
+              varParams.push(pId);
+              await query(`UPDATE product_variants SET ${varUpdates.join(', ')} WHERE product_id = ?`, varParams);
+            }
+          }
+
+          updatedCount++;
+        }
+
+        await logActivity({
+          userId: req.user.id,
+          sessionId: req.body.sessionId || null,
+          eventType: 'admin.bulk_batch_update',
+          affectedModule: 'admin',
+          requestMetadata: getReqMeta(req),
+          responseStatus: 200,
+          deviceInfo: req.headers['user-agent'] || 'unknown',
+          ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+          contextData: { updatedCount }
+        });
+
+        return res.json({ success: true, message: `Successfully updated ${updatedCount} product(s) in batch.`, updatedCount });
       }
 
-      const idString = productIds.map(id => Number(id)).join(',');
+      // 2. Multi-product bulk action
+      if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+        return res.status(400).json({ error: 'No products selected for bulk editing.' });
+      }
 
+      const idNums = productIds.map(id => Number(id)).filter(id => !isNaN(id) && id > 0);
+      if (idNums.length === 0) {
+        return res.status(400).json({ error: 'Invalid product selection.' });
+      }
+      const idString = idNums.join(',');
+
+      // Delete action
       if (action === 'delete') {
-        const prdInfo = await executeQuery<any>(`SELECT category_id, subcategory_id, brand_id FROM products WHERE id IN (${idString})`);
-        const catIds = [...new Set(prdInfo.map(p => p.category_id).filter(Boolean))].join(',');
-        const subCatIds = [...new Set(prdInfo.map(p => p.subcategory_id).filter(Boolean))].join(',');
-        const brandIds = [...new Set(prdInfo.map(p => p.brand_id).filter(Boolean))].join(',');
-
-        // Manually delete/update child rows to guarantee no FK constraint errors
         await query(`DELETE FROM cart WHERE product_id IN (${idString})`);
         await query(`DELETE FROM wishlist WHERE product_id IN (${idString})`);
         await query(`DELETE FROM reviews WHERE product_id IN (${idString})`);
         await query(`DELETE FROM product_images WHERE product_id IN (${idString})`);
         await query(`UPDATE order_items SET product_id = NULL, variant_id = NULL WHERE product_id IN (${idString})`);
         await query(`DELETE FROM product_variants WHERE product_id IN (${idString})`);
-        
         await query(`DELETE FROM products WHERE id IN (${idString})`);
 
-      } else if (action === 'category') {
-        if (!categoryId) return res.status(400).json({ error: 'Category ID required' });
-        const { validCategoryId } = await resolveForeignKeyIds(null, categoryId, null);
-        await query(`UPDATE products SET category_id = ? WHERE id IN (${idString})`, [validCategoryId]);
-      } else if (action === 'price') {
-        if (priceValue === undefined || priceValue === '') return res.status(400).json({ error: 'Price value required' });
-        const val = parseFloat(priceValue);
-        // Update all variants of these products
-        await query(`UPDATE product_variants SET mrp = ?, sale_price = ? WHERE product_id IN (${idString})`, [val, val]);
-      } else {
-        return res.status(400).json({ error: 'Invalid action' });
+        return res.json({ success: true, message: `Deleted ${idNums.length} product(s) successfully.` });
       }
 
-      res.json({ message: 'Bulk action completed' });
+      let updatedFieldsCount = 0;
+
+      // Category / Subcategory bulk update
+      if (action === 'category' || categoryId !== undefined || subcategoryId !== undefined || req.body.category_id !== undefined) {
+        const catIdToUse = categoryId !== undefined ? categoryId : req.body.category_id;
+        const subCatIdToUse = subcategoryId !== undefined ? subcategoryId : req.body.subcategory_id;
+
+        const { validCategoryId, validSubcategoryId } = await resolveForeignKeyIds(null, catIdToUse, subCatIdToUse);
+
+        const updatesList: string[] = [];
+        const paramsList: any[] = [];
+
+        if (validCategoryId !== null) {
+          updatesList.push('category_id = ?');
+          paramsList.push(validCategoryId);
+        }
+        if (validSubcategoryId !== null) {
+          updatesList.push('subcategory_id = ?');
+          paramsList.push(validSubcategoryId);
+        } else if (req.body.clearSubcategory) {
+          updatesList.push('subcategory_id = NULL');
+        }
+
+        if (updatesList.length > 0) {
+          await query(`UPDATE products SET ${updatesList.join(', ')} WHERE id IN (${idString})`, paramsList);
+          updatedFieldsCount++;
+        }
+      }
+
+      // Weight bulk update
+      if (action === 'weight' || weight !== undefined) {
+        const newWeight = String(weight || '').trim();
+        if (newWeight) {
+          await query(`UPDATE products SET weight = ? WHERE id IN (${idString})`, [newWeight]);
+          
+          if (req.body.syncVariantSize) {
+            await query(`UPDATE product_variants SET size = ? WHERE product_id IN (${idString})`, [newWeight]);
+          }
+          updatedFieldsCount++;
+        }
+      }
+
+      // Price bulk update
+      if (action === 'price' || priceValue !== undefined || req.body.price !== undefined) {
+        const mode = priceMode || 'fixed';
+        const numVal = parseFloat(priceValue !== undefined ? priceValue : req.body.price);
+
+        if (!isNaN(numVal)) {
+          if (mode === 'fixed') {
+            const mrpVal = mrpValue ? parseFloat(mrpValue) : null;
+            if (mrpVal && !isNaN(mrpVal)) {
+              await query(`UPDATE product_variants SET sale_price = ?, mrp = ? WHERE product_id IN (${idString})`, [numVal, mrpVal]);
+            } else {
+              await query(`UPDATE product_variants SET sale_price = ?, mrp = GREATEST(mrp, ?) WHERE product_id IN (${idString})`, [numVal, numVal]);
+            }
+          } else if (mode === 'percent') {
+            // e.g. +10% or -15%
+            const multiplier = 1 + (numVal / 100);
+            await query(`UPDATE product_variants SET sale_price = GREATEST(1, ROUND(sale_price * ?)), mrp = GREATEST(1, ROUND(mrp * ?)) WHERE product_id IN (${idString})`, [multiplier, multiplier]);
+          } else if (mode === 'flat') {
+            // e.g. +₹50 or -₹20
+            await query(`UPDATE product_variants SET sale_price = GREATEST(1, sale_price + ?), mrp = GREATEST(1, mrp + ?) WHERE product_id IN (${idString})`, [numVal, numVal]);
+          }
+          updatedFieldsCount++;
+        }
+      }
+
+      await logActivity({
+        userId: req.user.id,
+        sessionId: req.body.sessionId || null,
+        eventType: 'admin.bulk_product_update',
+        affectedModule: 'admin',
+        requestMetadata: getReqMeta(req),
+        responseStatus: 200,
+        deviceInfo: req.headers['user-agent'] || 'unknown',
+        ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+        contextData: { selectedCount: idNums.length, action, updatedFieldsCount }
+      });
+
+      res.json({
+        success: true,
+        message: `Bulk update applied successfully across ${idNums.length} product(s).`,
+        count: idNums.length
+      });
+
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      console.error('Bulk update error:', err);
+      res.status(500).json({ error: err.message || 'Server error during bulk operation' });
     }
-  });
+  };
+
+  app.post('/api/admin/products/bulk', requireAuth, requireAdmin, handleBulkProductUpdate);
+  app.put('/api/admin/products/bulk', requireAuth, requireAdmin, handleBulkProductUpdate);
+  app.delete('/api/admin/products/bulk', requireAuth, requireAdmin, handleBulkProductUpdate);
+  app.put('/api/admin/products/bulk/category', requireAuth, requireAdmin, handleBulkProductUpdate);
+  app.put('/api/admin/products/bulk/price', requireAuth, requireAdmin, handleBulkProductUpdate);
+  app.put('/api/admin/products/bulk/weight', requireAuth, requireAdmin, handleBulkProductUpdate);
 
   app.delete('/api/admin/products/:id', requireAuth, requireAdmin, async (req: any, res: any) => {
     try {

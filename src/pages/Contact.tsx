@@ -67,21 +67,21 @@ export default function Contact({ onNavigate }: ContactProps) {
                   <MapPin className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-serif font-bold text-neutral-950 block text-xs">Flagship Luxury Lounge</span>
-                    <span className="leading-relaxed block mt-1">Jaydev Fragrances, 45, Golden Plaza, MG Road, Mumbai - 400001</span>
+                    <span className="leading-relaxed block mt-1">Chintamani chowk Chinchwad</span>
                   </div>
                 </li>
                 <li className="flex items-center gap-3">
                   <Phone className="w-5 h-5 text-yellow-600 shrink-0" />
                   <div>
                     <span className="font-serif font-bold text-neutral-950 block text-xs">Customer Concierge Telephone</span>
-                    <span className="block mt-1">+91 98765 43210</span>
+                    <span className="block mt-1">+91 91721 78449</span>
                   </div>
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-yellow-600 shrink-0" />
                   <div>
                     <span className="font-serif font-bold text-neutral-950 block text-xs">Electronic Mail Care</span>
-                    <span className="block mt-1">care@jaydevfragrances.com</span>
+                    <span className="block mt-1">jaydevbusiness19@gmail.com</span>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -106,7 +106,7 @@ export default function Contact({ onNavigate }: ContactProps) {
                 </div>
               </div>
               <a 
-                href="https://wa.me/919876543210?text=Hi%20Jaydev%20Fragrances" 
+                href="https://wa.me/919172178449?text=Hi%20Jaydev%20Fragrances" 
                 target="_blank" 
                 rel="noreferrer"
                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded text-xs transition-colors shrink-0"

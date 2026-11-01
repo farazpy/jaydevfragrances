@@ -144,15 +144,15 @@ export default function Footer({ onNavigate, settings }: FooterProps) {
           <ul className="flex flex-col gap-3.5 text-xs text-neutral-400">
             <li className="flex items-start gap-2.5">
               <MapPin className="w-4 h-4 text-maroon-400 shrink-0 mt-0.5" />
-              <span>{settings?.store_address || 'Jaydev Fragrances, 45, Spiritual Plaza, MG Road, Mumbai - 400001'}</span>
+              <span>{settings?.store_address || 'Chintamani chowk Chinchwad'}</span>
             </li>
             <li className="flex items-center gap-2.5">
               <Phone className="w-4 h-4 text-maroon-400 shrink-0" />
-              <span>{settings?.contact_phone || '+91 98765 43210'}</span>
+              <span>{settings?.contact_phone || '+91 91721 78449'}</span>
             </li>
             <li className="flex items-center gap-2.5">
               <Mail className="w-4 h-4 text-maroon-400 shrink-0" />
-              <span>{settings?.contact_email || 'care@jaydevfragrances.com'}</span>
+              <span>{settings?.contact_email || 'jaydevbusiness19@gmail.com'}</span>
             </li>
             <li className="flex items-start gap-2.5">
               <Clock className="w-4 h-4 text-maroon-400 shrink-0 mt-0.5" />
