@@ -21,26 +21,26 @@ export default function HeroSlider({ onNavigate }: HeroSliderProps) {
           setBanners([
             {
               id: 1,
-              title: "Signature Oudh & Attars",
-              subtitle: "Experience the timeless elegance of pure aged Oud and artisanal botanical attars.",
-              image_url: "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80&w=1600",
-              link: "/category/premium-attars",
+              title: "Let Peace Fill Your Home",
+              subtitle: "Transform your everyday surroundings with rich fragrances and traditional aromas crafted to make every moment special.",
+              image_url: "https://s3.htknetwork.in/f/c8TyQutt",
+              link: "shop",
               sort_order: 0
             },
             {
               id: 2,
-              title: "The Art of Fine Perfumery",
+              title: "Make Every Moment Divine",
               subtitle: "Indulge in our exquisite collection of luxury Eau de Parfum, crafted with precision.",
               image_url: "https://images.unsplash.com/photo-1615397322964-b8beac469279?auto=format&fit=crop&q=80&w=1600",
-              link: "/category/luxury-perfumes",
+              link: "shop",
               sort_order: 1
             },
             {
               id: 3,
-              title: "Sacred Spiritual Aromatics",
+              title: "Everything Your Pooja Needs",
               subtitle: "Elevate your rituals with organic Bhimseni camphor and charcoal-free dhoop.",
               image_url: "https://images.unsplash.com/photo-1616406432452-07bc5938759d?auto=format&fit=crop&q=80&w=1600",
-              link: "/category/incense",
+              link: "shop",
               sort_order: 2
             }
           ]);
